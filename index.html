@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>File Reader - TXT & VCF</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="container">
+    <h1>File Reader - TXT & VCF</h1>
+    <form id="fileForm">
+      <input type="file" id="fileInput" multiple accept=".txt,.vcf">
+      <button type="submit" class="btn">Upload</button>
+    </form>
+    <div id="loading" class="hidden">Processing files...</div>
+    <div id="results"></div>
+  </div>
+  <script src="script.js"></script>
+</body>
+</html>
