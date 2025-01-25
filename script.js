@@ -1,44 +1,83 @@
-document.getElementById("fileForm").addEventListener("submit", async (e) => {
-  e.preventDefault();
+let files = [];
+let results = [];
 
-  const fileInput = document.getElementById("fileInput");
-  const loading = document.getElementById("loading");
-  const results = document.getElementById("results");
+document.getElementById("fileInput").addEventListener("change", handleFileSelect);
 
-  // Clear previous results
-  results.innerHTML = "";
+function handleFileSelect(event) {
+    files = event.target.files;
+    document.getElementById("formContainer").innerHTML = ""; // Reset formContainer
 
-  if (fileInput.files.length === 0) {
-    alert("Please upload at least one file.");
-    return;
-  }
+    // Clear previous results when new files are selected
+    document.getElementById("resultsContainer").innerHTML = "";
 
-  loading.classList.remove("hidden");
+    if (files.length > 0) {
+        document.getElementById("vcfName").value = ""; // Reset VCF name field
+    }
+}
 
-  const files = fileInput.files;
-  for (const file of files) {
-    const result = document.createElement("div");
-    result.className = "file-result";
-
-    try {
-      const content = await file.text();
-
-      let count = 0;
-      if (file.name.endsWith(".txt")) {
-        const lines = content.split("\n");
-        count = lines.filter(line => line.trim().match(/^\+?\d+$/)).length;
-      } else if (file.name.endsWith(".vcf")) {
-        const matches = content.match(/TEL:\+?\d+/g);
-        count = matches ? matches.length : 0;
-      }
-
-      result.innerHTML = `<strong>${file.name}:</strong> ${count} phone numbers found.`;
-    } catch (error) {
-      result.innerHTML = `<strong>${file.name}:</strong> Error processing file.`;
+function convertFiles() {
+    const vcfNamePrefix = document.getElementById("vcfName").value.trim();
+    if (!vcfNamePrefix) {
+        alert("Harap masukkan nama untuk file VCF!");
+        return;
     }
 
-    results.appendChild(result);
-  }
+    results = [];
+    Array.from(files).forEach((file, index) => {
+        const reader = new FileReader();
+        reader.onload = function(event) {
+            const txtContent = event.target.result;
+            const lines = txtContent.split("\n").map(line => line.trim()).filter(line => line);
+            const adminNumber = lines[0].replace(/Admin[\s=]+/, "").trim();
+            const userNumbers = lines.slice(1);
 
-  loading.classList.add("hidden");
-});
+            // Format VCF contacts
+            let adminContact = formatVCF(adminNumber, "ADMIN 1");
+            let userContacts = userNumbers.map((number, i) => formatVCF(number, `USER ${i + 1}`));
+
+            results.push({
+                vcfName: vcfNamePrefix || file.name.split(".")[0],
+                adminContact: adminContact,
+                userContacts: userContacts
+            });
+
+            if (index === files.length - 1) {
+                displayResults();
+            }
+        };
+        reader.readAsText(file);
+    });
+}
+
+function formatVCF(number, name) {
+    if (!number.startsWith("+")) {
+        number = "+" + number.trim();
+    }
+
+    return `BEGIN:VCARD
+VERSION:3.0
+FN:${name}
+TEL:${number}
+END:VCARD`;
+}
+
+function displayResults() {
+    const container = document.getElementById("resultsContainer");
+    container.innerHTML = ""; // Reset results container
+
+    results.forEach((result, index) => {
+        let resultContainer = document.createElement("div");
+        resultContainer.classList.add("result");
+
+        let vcfFileNameAdmin = `${result.vcfName}_ADMIN.vcf`;
+        let vcfFileNameUser = `${result.vcfName}.vcf`;
+
+        resultContainer.innerHTML = `
+            <h3>Nama File: ${result.vcfName}</h3>
+            <p><strong>VCF Admin:</strong> <a href="data:text/vcard;base64,${btoa(result.adminContact)}" download="${vcfFileNameAdmin}">Download</a></p>
+            <p><strong>VCF User:</strong> <a href="data:text/vcard;base64,${btoa(result.userContacts.join("\n"))}" download="${vcfFileNameUser}">Download</a></p>
+        `;
+
+        container.appendChild(resultContainer);
+    });
+}
