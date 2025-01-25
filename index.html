@@ -1,21 +1,28 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="id">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>File Reader - TXT & VCF</title>
-  <link rel="stylesheet" href="styles.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Konversi TXT ke VCF</title>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <div class="container">
-    <h1>File Reader - TXT & VCF</h1>
-    <form id="fileForm">
-      <input type="file" id="fileInput" multiple accept=".txt,.vcf">
-      <button type="submit" class="btn">Upload</button>
-    </form>
-    <div id="loading" class="hidden">Processing files...</div>
-    <div id="results"></div>
-  </div>
-  <script src="script.js"></script>
+    <div class="container">
+        <h1>Konversi File TXT ke VCF</h1>
+
+        <label for="fileInput">Pilih File TXT (Banyak File Dapat Dipilih):</label>
+        <input type="file" id="fileInput" multiple accept=".txt">
+
+        <div id="formContainer"></div>
+
+        <label for="vcfName">Nama untuk File VCF:</label>
+        <input type="text" id="vcfName" placeholder="Nama File VCF">
+
+        <button id="convertBtn" onclick="convertFiles()">Konvert</button>
+
+        <div id="resultsContainer"></div>
+    </div>
+
+    <script src="script.js"></script>
 </body>
 </html>
